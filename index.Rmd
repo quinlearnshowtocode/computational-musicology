@@ -2,6 +2,7 @@
 title: "Themed dashboard"
 output: 
   flexdashboard::flex_dashboard:
+    storyboard: true
     theme:
       bg: "#121212"  
       fg: "#E0E0E0"   
@@ -12,6 +13,7 @@ output:
         google: JetBrains Mono
     orientation: columns
     vertical_layout: fill
+       
 ---
 
 ```{r setup, include=FALSE}
@@ -20,8 +22,57 @@ library(flexdashboard)
 # thematic::thematic_rmd()
 ```
 
-Column {data-width=650 .tabset}
------------------------------------------------------------------------
+```{r}
+library(tidyverse)
+library(tidymodels)
+library(plotly)
+library(heatmaply)
+library(protoclust)
+library(cowplot)
+library(spotifyr)
+library(compmus)
+```
 
-### This is a title
+
+
+### Aesthetic vs Cloud rap
+
+corpus discription The corpus I've chosen to explore a unique collection of music from Spotify, particularly focusing on playlists curated by the account "The Sound of Spotify." These playlists are distinguished by their meticulous categorization into highly specific and nuanced genres, made possible through Spotify's algorithms and computational analysis of musical elements. This meticulous approach to classification allows for an in-depth exploration of niche musical styles, making it a rich area for study and comparisons.
+
+Thus, the playlist I would like to analyse by the sound of spotify is The Sound of Aesthetic RapLinks to an external site., which is a more niche and regional genre that is close to aesthetic rap according to "the sound of spotify". aesthetic rap is a new term and genre which is described as "a subgenre of rap music that emphasizes a particular style, mood, or "aesthetic" quality in its production, lyrics, and overall presentation." But by listen through it, some of them have classical music influences and some are lo-fi vibes. The evidences show that the elements that are considered as "aesthetic is very nuanced and it would be fruitful for further investigation to see how can spotify detect the "aesthetics". In comparison, I would like to analyse the playlist of The sound of cloud raps. Cloud rap is another subgenre of rap, which has similar characteristics with aesthetic raps on its impression, some of the songs from both genre both feature ethereal, dreamy and lo-fi beats. The corpus will try to find out what spotify algorithms think about the difference between these genres.
+
+
+
+### Speechiness and Valence
+
+```{r}
+cloud<-get_playlist_audio_features("", "1sIcT9bfCD4C53ZjKXWy7M")
+cloud<-head(cloud,20)
+aes<-get_playlist_audio_features("", "2OY7wFfc4FIedjHBF95f9t")
+aes<-head(aes,20)
+```
+
+
+```{r}
+
+rap <-
+  bind_rows(
+     cloud |> mutate(category = "Cloud Rap"),
+     aes|> mutate(category = "Aesthetic Rap")
+  ) 
+
+rap|>
+  ggplot(aes(x= track.name, y = speechiness, color=category,size=valence )) +
+  geom_point()+
+  coord_flip()+labs(title = "Speechiness and Valence in Aesthetic and Cloud rap")
+
+
+#put the color to category. 
+
+
+
+```
+
+***
+In this visualization we can see that aesthetic rap songs(red) in the corpus are more speechy than cloud rap(blue), with no obvious difference in valence.
 
