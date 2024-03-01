@@ -13,7 +13,6 @@ output:
         google: JetBrains Mono
     orientation: columns
     vertical_layout: fill
-       
 ---
 
 ```{r setup, include=FALSE}
@@ -33,15 +32,88 @@ library(spotifyr)
 library(compmus)
 ```
 
+```{r}
+library(patchwork)
+```
+### Self similarity matrix "crossy roads"
+```{r}
+road <-
+  get_tidy_audio_analysis("3UOz51ElOJLPyRxuHbFOEW") |> # Change URI.
+  compmus_align(bars, segments) |>                     # Change `bars`
+  select(bars) |>                                      #   in all three
+  unnest(bars) |>                                      #   of these lines.
+  mutate(
+    pitches =
+      map(segments,
+        compmus_summarise, pitches,
+        method = "rms", norm = "euclidean"              # Change summary & norm.
+      )
+  ) |>
+  mutate(
+    timbre =
+      map(segments,
+        compmus_summarise, timbre,
+        method = "rms", norm = "euclidean"              # Change summary & norm.
+      )
+  )
+```
 
+
+```{r}
+
+
+timbreroad<- road |>
+  compmus_self_similarity(pitches, "cosine") |> 
+  ggplot(
+    aes(
+      x = xstart + xduration / 2,
+      width = xduration,
+      y = ystart + yduration / 2,
+      height = yduration,
+      fill = d
+    )
+  ) +
+  geom_tile() +
+  coord_fixed() +
+  scale_fill_viridis_c(guide = "none") +
+  theme_classic() +
+  labs(x = "", y = "", title = "chroma")
+
+
+chromaroad<- road |>
+  compmus_self_similarity(timbre, "cosine") |> 
+  ggplot(
+    aes(
+      x = xstart + xduration / 2,
+      width = xduration,
+      y = ystart + yduration / 2,
+      height = yduration,
+      fill = d
+    )
+  ) +
+  geom_tile() +
+  coord_fixed() +
+  scale_fill_viridis_c(guide = "none") +
+  theme_classic() +
+  labs(x = "", y = "", title = "timbre")
+
+# Combine the two plots side by side
+combined_plot <- timbreroad+ chromaroad
+# Display the combined plot
+combined_plot
+```
+
+***
+
+This aesthetic rap song has a very simple structure, basically it's a loop of melody playing in the background every 10 seconds-ish and the rapper raps without much pith changes, which is reflected in the self similarity matrxix of chroma and timbre here. The green part in both matrices reflect that there is a part around 20-50 seconds that is unique to other sections, which is in fact a change in the loop pattern,then it came back.
+
+[here is the song](https://open.spotify.com/track/3UOz51ElOJLPyRxuHbFOEW?si=963f41f0a4ce404c)
 
 ### Aesthetic vs Cloud rap
 
 corpus discription The corpus I've chosen to explore a unique collection of music from Spotify, particularly focusing on playlists curated by the account "The Sound of Spotify." These playlists are distinguished by their meticulous categorization into highly specific and nuanced genres, made possible through Spotify's algorithms and computational analysis of musical elements. This meticulous approach to classification allows for an in-depth exploration of niche musical styles, making it a rich area for study and comparisons.
 
 Thus, the playlist I would like to analyse by the sound of spotify is The Sound of Aesthetic RapLinks to an external site., which is a more niche and regional genre that is close to aesthetic rap according to "the sound of spotify". aesthetic rap is a new term and genre which is described as "a subgenre of rap music that emphasizes a particular style, mood, or "aesthetic" quality in its production, lyrics, and overall presentation." But by listen through it, some of them have classical music influences and some are lo-fi vibes. The evidences show that the elements that are considered as "aesthetic is very nuanced and it would be fruitful for further investigation to see how can spotify detect the "aesthetics". In comparison, I would like to analyse the playlist of The sound of cloud raps. Cloud rap is another subgenre of rap, which has similar characteristics with aesthetic raps on its impression, some of the songs from both genre both feature ethereal, dreamy and lo-fi beats. The corpus will try to find out what spotify algorithms think about the difference between these genres.
-
-
 
 ### Speechiness and Valence
 
@@ -51,7 +123,6 @@ cloud<-head(cloud,20)
 aes<-get_playlist_audio_features("", "2OY7wFfc4FIedjHBF95f9t")
 aes<-head(aes,20)
 ```
-
 
 ```{r}
 
@@ -73,6 +144,57 @@ rap|>
 
 ```
 
+
 ***
 In this visualization we can see that aesthetic rap songs(red) in the corpus are more speechy than cloud rap(blue), with no obvious difference in valence.
+
+### Cepstrogram for "Crossy Roads" Aesthetic rap
+
+```{r}
+road <-
+  get_tidy_audio_analysis("3UOz51ElOJLPyRxuHbFOEW") |> # Change URI.
+  compmus_align(bars, segments) |>                     # Change `bars`
+  select(bars) |>                                      #   in all three
+  unnest(bars) |>                                      #   of these lines.
+  mutate(
+    pitches =
+      map(segments,
+        compmus_summarise, pitches,
+        method = "rms", norm = "euclidean"              # Change summary & norm.
+      )
+  ) |>
+  mutate(
+    timbre =
+      map(segments,
+        compmus_summarise, timbre,
+        method = "rms", norm = "euclidean"              # Change summary & norm.
+      )
+  )
+
+```
+
+```{r}
+road |>
+  compmus_gather_timbre() |>
+  ggplot(
+    aes(
+      x = start + duration / 2,
+      width = duration,
+      y = basis,
+      fill = value
+    )
+  ) +
+  geom_tile() +
+  labs(x = "Time (s)", y = NULL, fill = "Magnitude") +
+  scale_fill_viridis_c() +                              
+  theme_classic()
+```
+
+***
+
+The graph shows alternation of sections.
+
+From the cepstrogram we can see that this song has 3 parts and from 0-15 to 50-100 could be similar sections in terms of timbre.
+
+[here is the song](https://open.spotify.com/track/3UOz51ElOJLPyRxuHbFOEW?si=963f41f0a4ce404c)
 
