@@ -173,8 +173,7 @@ get_tidy_audio_analysis("5eBpfwTJBusVJp8VcLwokY") |>
 The chordogram of this aesthetic rap song shows a pattern of the chords switching among A7, E7, B7 and D7, however, when exactly the chord changes is not very clear from this graph. The level of measurement is based on each bar.There is no clear signs for modulations here, which makes sense because it is a rap song with simple musical structures.
 
 
-
-###Keygram of "straight to the moon!" Aesthetic rap
+### Keygram of "straight to the moon!" Aesthetic rap
 
 
 ```{r}
