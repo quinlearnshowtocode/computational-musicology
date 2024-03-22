@@ -30,11 +30,126 @@ library(protoclust)
 library(cowplot)
 library(spotifyr)
 library(compmus)
+library(ggdendro)
 ```
 
 ```{r}
 library(patchwork)
 ```
+### Hierachical clustering for cloud rap playlist Classifier 1 
+
+
+```{r, results = 'hide'}
+library(tidyverse)
+library(tidymodels)
+library(ggdendro)
+library(heatmaply)
+library(spotifyr)
+library(compmus)
+
+get_conf_mat <- function(fit) {
+  outcome <- .get_tune_outcome_names(fit)
+  fit |> 
+    collect_predictions() |> 
+    conf_mat(truth = outcome, estimate = .pred_class)
+}  
+
+get_pr <- function(fit) {
+  fit |> 
+    conf_mat_resampled() |> 
+    group_by(Prediction) |> mutate(precision = Freq / sum(Freq)) |> 
+    group_by(Truth) |> mutate(recall = Freq / sum(Freq)) |> 
+    ungroup() |> filter(Prediction == Truth) |> 
+    select(class = Prediction, precision, recall)
+}  
+```
+
+
+
+```{r}
+library(tidyverse)
+```
+
+```{r}
+library(tidymodels)
+```
+
+
+```{r}
+cloud<-get_playlist_audio_features("", "1sIcT9bfCD4C53ZjKXWy7M")
+```
+
+```{r}
+cloud <-
+  head(cloud,20) |>
+  add_audio_analysis() |>
+  mutate(
+    segments = map2(segments, key, compmus_c_transpose),
+    pitches =
+      map(segments,
+        compmus_summarise, pitches,
+        method = "mean", norm = "manhattan"
+      ),
+    timbre =
+      map(
+        segments,
+        compmus_summarise, timbre,
+        method = "mean"
+      )
+  ) |>
+  mutate(pitches = map(pitches, compmus_normalise, "clr")) |>
+  mutate_at(vars(pitches, timbre), map, bind_rows) |>
+  unnest(cols = c(pitches, timbre))
+```
+
+
+
+```{r}
+cloud_juice1 <-
+  recipe(
+    track.name ~  #~ for prediction models, on left is the thing you are predicting, right side is the predictors) take out/add the things you wish, and rationalize your choice
+      danceability + # these are all the features
+      energy +
+      loudness +
+      speechiness +
+      acousticness +
+      instrumentalness +
+      liveness +
+      valence +
+      tempo +
+      duration +
+      C + `C#|Db` + D + `D#|Eb` + #these are all the pitch classes
+      E + `F` + `F#|Gb` + G +
+      `G#|Ab` + A + `A#|Bb` + B +
+      c01 + c02 + c03 + c04 + c05 + c06 + #these are all the timbre features
+      c07 + c08 + c09 + c10 + c11 + c12,
+    data = cloud
+  ) |>
+  step_center(all_predictors()) |> #you can also change here, center and scale, and range, which move everything to one scale.
+  step_scale(all_predictors()) |> 
+  # step_range(all_predictors()) |> 
+  prep(cloud |> mutate(track.name = str_trunc(track.name, 20))) |> #cut the track names to only 20 characters
+  juice() |> 
+  column_to_rownames("track.name")
+```
+
+
+```{r}
+cloud_dist1 <- dist(cloud_juice1, method = "euclidean") #the distance
+```
+
+```{r}
+cloud_dist1 |> 
+  hclust(method = "single") |> # Try single, average, and complete. The linkage
+  dendro_data() |>
+  ggdendrogram() 
+```
+
+***As we can see, "Rest" and "Timebomb" are the most similar songs in this classifier. Upon listening, I noticed that these songs both share the elements as trap, and similar vocal voices and beat patterns. 
+
+
+
+
 
 ### chordogram of "straight to the moon!" Aesthetic rap
 
@@ -357,3 +472,9 @@ From the cepstrogram we can see that this song has 3 parts and from 0-15 to 50-1
 
 
 
+Extend your storyboard from last week to include an analysis of rhythm or tempo. For example:
+
+Make a histogram of tempi for different groups in your corpus.
+Make tempograms for outliers or archetypes in your corpus.
+Compare the tempo curves to the self-similarity matrices of multiple performances of the same piece (easiest for classical music).
+Submit the URL to your new web page for review.
