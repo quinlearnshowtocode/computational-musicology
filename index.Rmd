@@ -145,7 +145,8 @@ cloud_dist1 |>
   ggdendrogram() 
 ```
 
-***As we can see, "Rest" and "Timebomb" are the most similar songs in this classifier. Upon listening, I noticed that these songs both share the elements as trap, and similar vocal voices and beat patterns. 
+***
+As we can see, "Rest" and "Timebomb" are the most similar songs in this classifier. Upon listening, I noticed that these songs both share the elements as trap, and similar vocal voices and beat patterns. 
 
 
 
