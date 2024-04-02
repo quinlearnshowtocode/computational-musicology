@@ -1,0 +1,59 @@
+---
+title: "Themed dashboard"
+output: 
+  flexdashboard::flex_dashboard:
+    storyboard: true
+    theme:
+      bg: "#121212"  
+      fg: "#E0E0E0"   
+      primary: "#BB86FC"
+      base_font:
+        google: Prompt
+      code_font:
+        google: JetBrains Mono
+    orientation: columns
+    vertical_layout: fill
+---
+
+```{r setup, include=FALSE}
+library(flexdashboard)
+# Install thematic and un-comment for themed static plots (i.e., ggplot2)
+# thematic::thematic_rmd()
+```
+
+```{r}
+library(tidyverse)
+library(tidymodels)
+library(plotly)
+library(heatmaply)
+library(protoclust)
+library(cowplot)
+library(spotifyr)
+library(compmus)
+library(ggdendro)
+```
+
+### A transcultural,computational musiclogy comparitive study on Hip-pop music
+
+The corpus of choice are the current popular tracks across 4 different cultures where a relatively larger audience base and hippop culture is active, these are french, german, spanish(latin american), and korean hip-pop
+
+Spanish(Latin american) Hip-hop: 
+
+<iframe style="border-radius:12px" src="https://open.spotify.com/embed/playlist/4cy45EPpNjdniwLvfLDt0K?utm_source=generator&theme=0" width="100%" height="152" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
+
+German Hip-hop: 
+
+<iframe style="border-radius:12px" src="https://open.spotify.com/embed/playlist/5k0hLNPNjD7iYs1PMtHEyM?utm_source=generator" width="100%" height="152" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
+
+Korean Hip-hop: 
+
+<iframe style="border-radius:12px" src="https://open.spotify.com/embed/playlist/6eCZ6NrzVYcPB1WjlMeDV9?utm_source=generator" width="100%" height="152" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
+
+French Hip-hop:
+
+<iframe style="border-radius:12px" src="https://open.spotify.com/embed/playlist/0FiYE4GULpT2A2G682GdWd?utm_source=generator" width="100%" height="152" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
+
+### A transcultural,computational musiclogy comparitive study on Hip-pop music
+
+
+![Spotify Hip-hop around the world](https://github.com/quinlearnshowtocode/computational-musicology/blob/main/hip.png)
