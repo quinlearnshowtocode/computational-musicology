@@ -9,6 +9,28 @@ kr_analyzed <- kr %>% mutate(playlist = "Korean Hiphop") %>% add_audio_analysis(
 es_analyzed <- es %>% mutate(playlist = "Latino Hiphop") %>% add_audio_analysis()
 
 
+cd <-
+  get_tidy_audio_analysis("19xVZr90ICYmatwd3FsKbe") 
+thot <-
+  get_tidy_audio_analysis("1PoxR9dqTzlGYFJkHnpNfS") 
+como <-
+  get_tidy_audio_analysis("1PoxR9dqTzlGYFJkHnpNfS")
+tl <-
+  get_tidy_audio_analysis("7gewLHcVTy1TrlwqSpuTJF") 
+
+
+
+saveRDS(object = cd, file = "data/cd.RDS")
+
+saveRDS(object = thot, file = "data/thot.RDS")
+
+saveRDS(object = como, file = "data/como.RDS")
+
+saveRDS(object = tl, file = "data/tl.RDS")
+
+
+
+
 saveRDS(object = fr, file = "data/fr.RDS")
 
 saveRDS(object = es, file = "data/es.RDS")
