@@ -121,7 +121,7 @@ row.names(average_features_df) <- names(average_features)
 average_features_df$Playlist <- row.names(average_features_df)
 
 ```
-
+#### Bar plots
 ```{r}
 # Reshape the data 
 average_features_long <- pivot_longer(average_features_df, 
@@ -129,7 +129,7 @@ average_features_long <- pivot_longer(average_features_df,
                                       names_to = "Feature", 
                                       values_to = "Average")
 
-ggplot(average_features_long, aes(x = Playlist, y = Average, fill = Feature)) +
+bar<-ggplot(average_features_long, aes(x = Playlist, y = Average, fill = Feature)) +
   geom_bar(stat = "identity", position = position_dodge(), width = 0.7) +
   theme_minimal() +
   labs(title = "Average Spotify Audio Features Across Playlists", x = "De=German Es=Spanish Fr=French Kr=Korean", y = "Average Value") +
@@ -138,6 +138,34 @@ ggplot(average_features_long, aes(x = Playlist, y = Average, fill = Feature)) +
   facet_wrap(~Feature, scales = "free_y", ncol = 3)  
 
 
+```
+
+```{r}
+
+
+all_features_df <- do.call(rbind, playlist_features)
+
+# Reshape for plotting
+all_features_long <- pivot_longer(all_features_df, 
+                                  cols = c(danceability, energy, valence, speechiness, instrumentalness, liveness, acousticness), 
+                                  names_to = "Feature", 
+                                  values_to = "Value")
+
+
+box<-ggplot(all_features_long, aes(x = Feature, y = Value, fill = playlist_name)) +
+  geom_boxplot() +
+  theme_minimal() +
+  labs(title = "Boxplot of Spotify Audio Features by Playlist", x = "Feature", y = "Value") +
+  scale_fill_brewer(palette = "Set3")+
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+```
+
+```{r plot1, fig.show='hold', out.width='100%', out.height='400px'}
+p_combined <- bar + box
+
+# To print the combined plot
+p_combined
 ```
 
 ***
@@ -245,48 +273,103 @@ average_features_by_playlist <- all_features %>%
 ```{r}
 library(dplyr)
 
+# Calculate average features by language
 average_features_by_language <- all_features %>%
   group_by(language) %>%
   summarise(across(c(danceability, energy, valence, speechiness, acousticness, instrumentalness, liveness, tempo), mean, na.rm = TRUE))
 
-#distance
+# Define distance calculation function
 calc_distance <- function(track_features, avg_features) {
   sqrt(sum((track_features - avg_features)^2))
 }
 
-#empty list to store the most representative track for each language
+# Initialize an empty list to store the most representative track for each language
 representative_tracks <- list()
 
-
+# Loop through each language to find the most representative track
 for (lang in unique(all_features$language)) {
   tracks <- filter(all_features, language == lang)
-  
-
   avg_features <- filter(average_features_by_language, language == lang)
   avg_features_numeric <- select(avg_features, -language)
+  
+  # Calculate distances from the average features for each track
   distances <- apply(select(tracks, c(danceability, energy, valence, speechiness, acousticness, instrumentalness, liveness, tempo)), 1, function(track_row) {
     calc_distance(track_row, unlist(avg_features_numeric))
   })
   
+  # Find the track with the minimum distance
   min_distance_index <- which.min(distances)
-  
   representative_track <- tracks[min_distance_index, ]
   
+  # Store the most representative track in the list
   representative_tracks[[lang]] <- representative_track
 }
 
-representative_tracks
-
-#print
+# Print the most representative track for each language
 for (lang in names(representative_tracks)) {
   representative_track <- representative_tracks[[lang]]
-  track_id <- representative_track$id  
-  
-  print(paste("Language:", lang, "- Most representative track:", track_id))
+  track_name <- representative_track$`track.name`  # Adjust the column name based on your dataframe
+  cat("The most representative track in", lang, "is:", track_name, "\n")
 }
+
+```
+
+```{r}
+library(plotly)
+
+# Assuming 'all_features' already has the 'language' column and necessary audio features
+pca_result <- prcomp(all_features[, c("danceability", "energy", "valence", "speechiness", "acousticness", "instrumentalness", "liveness", "tempo")], center = TRUE, scale. = TRUE)
+pca_data <- as.data.frame(pca_result$x[, 1:2])
+colnames(pca_data) <- c("PC1", "PC2")
+
+# Add back the language and track names to the PCA data
+pca_data$playlist_name <- all_features$playlist_name
+pca_data$track_name <- all_features$track.name
+
+```
+
+
+```{r}
+# Create a basic plotly object with PCA data
+library(plotly)
+library(dplyr)
+
+# Assuming pca_data contains all tracks with PCA coordinates
+# and representative_tracks contains the most representative tracks WITH their PCA coordinates
+
+# Plot all tracks
+p <- plot_ly(data = pca_data, x = ~PC1, y = ~PC2, type = 'scatter', mode = 'markers',
+             text = ~paste("Track:", track_name, "<br>Playlist:", playlist_name),
+             hoverinfo = "text", 
+             marker = list(color = ~as.factor(playlist_name), size = 10, opacity = 0.6)) %>%
+  layout(title = "PCA of Playlists",
+         xaxis = list(title = 'Principal Component 1'),
+         yaxis = list(title = 'Principal Component 2'),
+         colorway = c("red", "blue", "green", "yellow"),
+         hovermode = "closest")
+
+# Ensure representative_tracks has PC1, PC2 for plotting
+# This step might require adding PCA coordinates to representative_tracks, similar to pca_data
+
+# Highlight the most representative tracks
+for(lang in unique(representative_tracks$playlist_name)) {
+  rep_track <- representative_tracks %>% filter(playlist_name == lang)
+  p <- p %>% add_markers(data = rep_track, x = ~PC1, y = ~PC2,
+                         marker = list(size = 15, symbol = 'star-diamond', line = list(color = 'black', width = 2)),
+                         text = ~paste("Representative Track:", track_name, "<br>Playlist:", playlist_name),
+                         hoverinfo = "text",
+                         name = lang)  # This helps in differentiating groups
+}
+
+# Render the plot
+p
+
 ```
 
 ***
+
+<iframe style="border-radius:12px" src="https://open.spotify.com/embed/playlist/7oIDr5FLnnjjwVyPQzd9fr?utm_source=generator&theme=0" width="100%" height="352" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
+
 based on comparing the audio features of each track against the average audio features of all tracks within the same group. The track whose features are closest to these averages is considered the most representative. This process assumes that the "average sound" of a playlist can be quantified by the mean values of its tracks' audio features, such as danceability, energy, valence, etc.
 
 The Steps Explained: Group and Average: For each group (identified by language in your dataset), calculate the average value for each audio feature across all tracks in that group. This gives a profile of what the average track looks like for each language in terms of its Spotify audio features.
@@ -298,7 +381,6 @@ Identify the Closest Track: The track with the smallest Euclidean distance to th
 Extract Track ID: Once the most representative track is identified, its track_id (or any other relevant identifier) can be extracted for further use, like retrieving the track on Spotify or analyzing it further.
 
 
-<iframe style="border-radius:12px" src="https://open.spotify.com/embed/playlist/7oIDr5FLnnjjwVyPQzd9fr?utm_source=generator&theme=0" width="100%" height="352" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
 
 ### Self-similarity matrices of most-representative tracks in each language
 
@@ -524,27 +606,7 @@ hiphop <- bind_rows(fr_analyzed, de_analyzed, kr_analyzed, es_analyzed)
 
 
 ```{r}
-hiphop_features <-
-  hiphop |>
-  mutate(playlist = factor(playlist)) |>
-  mutate(segments = map2(segments, key, compmus_c_transpose)) |>
-  mutate(
-    pitches =
-      map(
-        segments,
-        compmus_summarise, pitches,
-        method = "mean", norm = "manhattan"
-      ),
-    timbre =
-      map(
-        segments,
-        compmus_summarise, timbre,
-        method = "mean"
-      )
-  ) |>
-  mutate(pitches = map(pitches, compmus_normalise, "clr")) |>
-  mutate_at(vars(pitches, timbre), map, bind_rows) |>
-  unnest(cols = c(pitches, timbre))
+hiphop_features <-read_rds('data/hiphop_features.rds')
 ```
 
 ```{r}
@@ -607,9 +669,6 @@ get_conf_mat <- function(fit) {
 }  
 ```
 
-```{r}
-hiphop_forest |> get_pr()
-```
 
 ```{r}
 workflow() |> 
@@ -653,14 +712,24 @@ hiphop_knn <-
 hiphop_knn |>
   collect_predictions() |> 
   conf_mat(truth = playlist, estimate = .pred_class) |> 
-  autoplot(type = "mosaic")
+  autoplot(type = "heatmap")
 ```
+   
+### All precision and recall
+Precision and Recall for Random Forest
 
 ```{r}
-hiphop_knn |> get_conf_mat() |> autoplot(type = "heatmap")
+hiphop_forest |> get_pr()
 ```
 
+Precision and Recall for KNN
 
+```{r}
+hiphop_knn|> get_pr()
+```
+
+***
+Comparison
 
 
 ### K-means clustering for songs in all 4 playlsits: cluster numbers
