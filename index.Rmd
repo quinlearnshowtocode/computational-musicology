@@ -140,7 +140,7 @@ ggplot(average_features_long, aes(x = Playlist, y = Average, fill = Feature)) +
 
 ```
 
-------------------------------------------------------------------------
+***
 
 From the graph we can see that the average value of the audio features of the four hip-hop playlists shows the most variety in instrumentalness, acouscticness, valence, speechiness and loudness. Spanish hip-hop music has the highest speechiness, instrumentalness, acousticness and valence, While french music has the lowest instrumentalness, speechiness, and energy. German hip-hop music is the lowest in valence and instrumentalness, while Korean hip-hip music is the highest in energy and valence, but lowest in loudness and acousticness and speechiness.
 
@@ -176,8 +176,8 @@ ggplot(correlation_matrix_melted, aes(Var1, Var2, fill = value)) +
   labs(x = "", y = "", title = "Correlation Matrix of Audio Features", fill = "Correlation")
 ```
 
-------------------------------------------------------------------------
 
+***
 Loudness and energy have the strongest correlation, and
 
 ### chroma
@@ -229,7 +229,7 @@ ggplot(pitch_df, aes(x = as.factor(key), y = Count, fill = Playlist)) +
 
 ```
 
-------------------------------------------------------------------------
+***
 
 something to say here
 
@@ -243,7 +243,6 @@ average_features_by_playlist <- all_features %>%
 ```
 
 ```{r}
-
 library(dplyr)
 
 average_features_by_language <- all_features %>%
@@ -287,9 +286,7 @@ for (lang in names(representative_tracks)) {
 }
 ```
 
-```{=html}
-<iframe style="border-radius:12px" src="https://open.spotify.com/embed/playlist/7oIDr5FLnnjjwVyPQzd9fr?utm_source=generator&theme=0" width="100%" height="352" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
-```
+***
 based on comparing the audio features of each track against the average audio features of all tracks within the same group. The track whose features are closest to these averages is considered the most representative. This process assumes that the "average sound" of a playlist can be quantified by the mean values of its tracks' audio features, such as danceability, energy, valence, etc.
 
 The Steps Explained: Group and Average: For each group (identified by language in your dataset), calculate the average value for each audio feature across all tracks in that group. This gives a profile of what the average track looks like for each language in terms of its Spotify audio features.
@@ -300,13 +297,16 @@ Identify the Closest Track: The track with the smallest Euclidean distance to th
 
 Extract Track ID: Once the most representative track is identified, its track_id (or any other relevant identifier) can be extracted for further use, like retrieving the track on Spotify or analyzing it further.
 
+
+<iframe style="border-radius:12px" src="https://open.spotify.com/embed/playlist/7oIDr5FLnnjjwVyPQzd9fr?utm_source=generator&theme=0" width="100%" height="352" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
+
 ### Self-similarity matrices of most-representative tracks in each language
 
 #### french
 
 ```{r}
 cd <-
-  get_tidy_audio_analysis("19xVZr90ICYmatwd3FsKbe") |>
+  read_rds('data/cd.rds') |>
   compmus_align(bars, segments) |>
   select(bars) |>
   unnest(bars) |>
@@ -354,7 +354,7 @@ German
 
 ```{r}
 thot <-
-  get_tidy_audio_analysis("1PoxR9dqTzlGYFJkHnpNfS") |>
+  read_rds('data/thot.rds') |>
   compmus_align(bars, segments) |>
   select(bars) |>
   unnest(bars) |>
@@ -402,7 +402,7 @@ Spanish
 
 ```{r}
 como <-
-  get_tidy_audio_analysis("1PoxR9dqTzlGYFJkHnpNfS") |>
+  read_rds('data/como.rds') |>
   compmus_align(bars, segments) |>
   select(bars) |>
   unnest(bars) |>
@@ -450,7 +450,7 @@ Korean
 
 ```{r}
 tl <-
-  get_tidy_audio_analysis("7gewLHcVTy1TrlwqSpuTJF") |>
+  read_rds('data/tl.rds') |>
   compmus_align(bars, segments) |>
   select(bars) |>
   unnest(bars) |>
@@ -660,7 +660,10 @@ hiphop_knn |>
 hiphop_knn |> get_conf_mat() |> autoplot(type = "heatmap")
 ```
 
-### K-means clustering for songs in all 4 playlsits
+
+
+
+### K-means clustering for songs in all 4 playlsits: cluster numbers
 
 ```{r}
 hiphop_juice <-
@@ -681,6 +684,7 @@ hiphop_juice <-
   column_to_rownames("track.name")
 ```
 
+
 ```{r}
 library(cluster)     # for silhouette width
 library(NbClust)
@@ -694,6 +698,9 @@ best_nc <- nb$Best.nc[1]
 print(nb)
 
 ```
+
+
+### K-means clustering for songs in all 4 playlsits
 
 ```{r}
 pca_result <- prcomp(hiphop_juice, scale. = TRUE)
@@ -730,9 +737,9 @@ p
 
 ### A multi-lingual rap salad: Generating new playlists based on K-means clustering
 
-```{=html}
 <iframe style="border-radius:12px" src="https://open.spotify.com/embed/playlist/6rExGOsB7IsxtPdIHTjINn?utm_source=generator" width="100%" height="352" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
-```
+
+
 ### Conrtibutions and Limitations
 
 Popularity as a Measure of Cultural Relevance: Assuming that the most popular tracks on Spotify accurately reflect cultural trends or preferences may overlook underground or emerging scenes not yet represented in mainstream charts.
