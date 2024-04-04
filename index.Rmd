@@ -161,7 +161,7 @@ box<-ggplot(all_features_long, aes(x = Feature, y = Value, fill = playlist_name)
 
 ```
 
-```{r plot1, fig.show='hold', out.width='100%', out.height='400px'}
+```{r}
 p_combined <- bar + box
 
 # To print the combined plot
