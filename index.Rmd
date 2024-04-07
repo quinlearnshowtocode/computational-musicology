@@ -41,8 +41,9 @@ library(ggplot2)
 ```
 
 ### A transcultural,computational musiclogy comparitive study on Hip-pop music
+Hip-pop is a global phenomenon, while it has a global influence rooted from the US in the 1970s, different cultures and subcultures, other music genres all give hip-hop a twist of different taste. Hip-hop is deeply intertwined with lyrics, languge, rythms, rythms inherent in the language and societal narratives. Therefore, hip-pop can be studied in this two way street: examining how certain features of hip-hop remain universally popular across the globe, while also exploring how certain feature contribute to its popularity on a local scale. 
 
-The corpus of choice are the current popular tracks across 4 different cultures where a relatively larger audience base and hippop culture is active, these are french, german, spanish(latin american), and korean hip-pop
+The corpus of choice are the current popular tracks across 4 different cultures where a relatively larger audience base and hip-pop culture is active, these are French, German, Spanish(latin american), and Korean hip-pop. These playlists contain 50 songs each and 200 in total, chosen from the Spotify's official playlist of hot and trending hiphop songs in each language to make sure the corpus is up to date and is valid for anlaysing trends in mainstream hip-hop scene across different cultures.
 
 Spanish(Latin american) Hip-hop: <iframe style="border-radius:12px" src="https://open.spotify.com/embed/playlist/4cy45EPpNjdniwLvfLDt0K?utm_source=generator&theme=0" width="100%" height="152" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
 
@@ -53,21 +54,20 @@ Korean Hip-hop: <iframe style="border-radius:12px" src="https://open.spotify.com
 French Hip-hop: <iframe style="border-radius:12px" src="https://open.spotify.com/embed/playlist/0FiYE4GULpT2A2G682GdWd?utm_source=generator" width="100%" height="152" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
 
 ### A transcultural,computational musiclogy comparitive study on Hip-pop music, research question and Assumptions
+Here are the research questions that this portfolio tries to analyse:
 
-How do the audio features of the most popular hip-hop tracks vary across different linguistic and cultural contexts in the current year?
+1.How do the audio features of the popular hip-hop tracks vary across different linguistic and cultural contexts in the current mainstream hip-hop scene?
 
-This question invites an analysis of how musical trends and listener preferences might differ by culture, as reflected in the music's audio features (e.g., danceability, energy, valence).
+2.How do audio features influence the popularity of hip-hop tracks across French, German, Spanish (Latin American), and Korean cultures, and what commonalities and differences exist in their influence when these cultures are analyzed separately and collectively as "mainstream hiphop"?
 
-What can the popularity and audio features of hip-hop tracks across languages tell us about the global influence of certain musical characteristics?
+The research questions invite an analysis of how musical trends and listener preferences in hip-hop might differ by culture, as reflected in the music's audio features (danceability, energy, valence and timbre etc.). It is assumed that certain audio features are universally influential in determining the popularity of hip-hop tracks across different cultures, while other features' impact on popularity may vary significantly due to cultural preferences and listening habits. Given the differences and commonalities in the features, certain algorithms can classify, detect, and effectively cluster the songs based on their audio features. 
 
-This question focuses on identifying which musical features are universally appealing or culturally specific in the context of hip-hop. How does the lyrical content (as inferred from speechiness, instrumentalness, )
 
-### Trends in the Hip-pop music in different languages/cultures
+### Exploratory data analysis: Trends in the Hip-pop music in different languages/cultures
 
 ```{r}
 es <- readRDS(file = "data/es.RDS")
 ```
-
 
 ```{r}
 fr <- readRDS(file = "data/fr.RDS")
@@ -79,6 +79,9 @@ de <- readRDS(file = "data/de.RDS")
 
 ```
 
+```{r}
+hiphop_features <-read_rds('data/hiphop_features.rds')
+```
 
 ```{r}
 playlist_files <- list(
@@ -121,7 +124,7 @@ row.names(average_features_df) <- names(average_features)
 average_features_df$Playlist <- row.names(average_features_df)
 
 ```
-#### Bar plots
+
 ```{r}
 # Reshape the data 
 average_features_long <- pivot_longer(average_features_df, 
@@ -129,7 +132,7 @@ average_features_long <- pivot_longer(average_features_df,
                                       names_to = "Feature", 
                                       values_to = "Average")
 
-bar<-ggplot(average_features_long, aes(x = Playlist, y = Average, fill = Feature)) +
+ggplot(average_features_long, aes(x = Playlist, y = Average, fill = Feature)) +
   geom_bar(stat = "identity", position = position_dodge(), width = 0.7) +
   theme_minimal() +
   labs(title = "Average Spotify Audio Features Across Playlists", x = "De=German Es=Spanish Fr=French Kr=Korean", y = "Average Value") +
@@ -139,6 +142,14 @@ bar<-ggplot(average_features_long, aes(x = Playlist, y = Average, fill = Feature
 
 
 ```
+
+------------------------------------------------------------------------
+
+From the graph we can see that the average value of the audio features of the four hip-hop playlists shows the most variety in instrumentalness, acouscticness, valence, speechiness and loudness. Spanish hip-hop music has the highest average in speechiness, instrumentalness, acousticness and valence, While french music has the lowest average in instrumentalness, speechiness, and energy. German hip-hop music has the lowest average in valence and instrumentalness, while Korean hip-hip music is the highest in energy and valence, but lowest in loudness and acousticness and speechiness.
+
+This exploratory analysis provides great insight into the difference in the popular hip-hop music across these cultures, which could be a result of a variety of factors including historical music influences,linguistic characteristics, trends and the difference in the taste of the listeners(because in reversed that's also why they became so popular). This analysis gives us a good base for our further correlation, regression, single track analysis, and clustering.
+
+### Box plot for audio features
 
 ```{r}
 
@@ -152,7 +163,7 @@ all_features_long <- pivot_longer(all_features_df,
                                   values_to = "Value")
 
 
-box<-ggplot(all_features_long, aes(x = Feature, y = Value, fill = playlist_name)) +
+ggplot(all_features_long, aes(x = Feature, y = Value, fill = playlist_name)) +
   geom_boxplot() +
   theme_minimal() +
   labs(title = "Boxplot of Spotify Audio Features by Playlist", x = "Feature", y = "Value") +
@@ -161,35 +172,75 @@ box<-ggplot(all_features_long, aes(x = Feature, y = Value, fill = playlist_name)
 
 ```
 
-```{r}
-p_combined <- bar + box
+```{r echo=FALSE, results='hide', message=FALSE, warning=FALSE}
+# Perform ANOVA for each feature and summarize the results
+anova_results_list <- list()
 
-# To print the combined plot
-p_combined
+
+for (feature in c("danceability", "energy", "valence", "speechiness", "instrumentalness", "liveness", "acousticness")) {
+  feature_data <- all_features_long[all_features_long$Feature == feature, ]
+  
+  anova_result <- aov(Value ~ playlist_name, data = all_features_long, subset = Feature == feature)
+  
+  # Get the summary
+  anova_summary <- summary(anova_result)
+  
+  # Add to the list
+  anova_results_list[[feature]] <- anova_summary
+}
+
+# Check results for one of the features, for example 'danceability'
+print(anova_results_list[["danceability"]])
+print(anova_results_list[["energy"]])
+print(anova_results_list[["valence"]])
+print(anova_results_list[["speechiness"]])
+print(anova_results_list[["Instrumentalness"]])
+print(anova_results_list[["liveness"]])
+print(anova_results_list[["acousticness"]])
 ```
+
 
 ***
 
-From the graph we can see that the average value of the audio features of the four hip-hop playlists shows the most variety in instrumentalness, acouscticness, valence, speechiness and loudness. Spanish hip-hop music has the highest speechiness, instrumentalness, acousticness and valence, While french music has the lowest instrumentalness, speechiness, and energy. German hip-hop music is the lowest in valence and instrumentalness, while Korean hip-hip music is the highest in energy and valence, but lowest in loudness and acousticness and speechiness.
+The distributions suggest that while some audio features like danceability and energy are consistently emphasized across cultures in hip-hop music, indicating a potential universal preference, other features like acousticness, speechiness, and valence show more variability, which might be influenced by cultural, linguistic preference.
 
-This exploratory analysis provides great insight into the difference in the popular hip-hop music across these cultures, which could be a result of a variety of factors including historical music influences,linguistic characteristics, trends and the difference in the taste of the listeners(because in reversed that's also why they became so popular). This analysis gives us a good base for our further correlation, regression, single track analysis, and clustering.
+Acousticness:
+Latino hip-hop shows the highest median acousticness, with a wide interquartile range, suggesting a significant variance in acousticness within these tracks. Koerean hip-hop shows the lowest median in acoustiness.
 
-### correlation
+Danceability:
+All four playlists have a relatively high danceability, which is expected for hip-hop, for its rhythm and beat that encourages dancing. French hip-hop shows the widest IQR, indicating greater variability in how danceable the tracks in the playlists are
 
-```{r}
-all_features <- do.call(rbind, lapply(names(playlist_features), function(lang) {
-  df <- playlist_features[[lang]]
-  df$language <- lang
-  return(df)
-}))
+Energy:
+Korean hip-hop shows a notably higher median energy compared to other playlists, with French Hip-hop displaying the lowest median energy but with a higher variance.All four playlists have a relaticely high energy, which is consistant with hip-hop.
 
-numeric_columns <- c("danceability", "energy", "valence", "speechiness", "instrumentalness", "tempo","liveness","loudness","acousticness")
-all_features[numeric_columns] <- lapply(all_features[numeric_columns], as.numeric)
+Instrumentalness:
+There's a general trend towards lower instrumentalness across all playlists, which reflects hip-hop's characteristics where lyrics and vocals are dominant. 
 
-```
+Liveness:
+Liveness appears to be similar across the playlists with relatively low median values, suggesting that most tracks are studio-produced rather than live recordings.
 
-```{r}
-correlation_matrix <- cor(all_features[, numeric_columns], use = "complete.obs")
+Speechiness:
+Latino hiphop has the highest median speechiness in all, which could indicate a preference for more wordy and rapping style, and could also stem from the language structure and habit.  The other three languages have similar median speechiness, with german slightly higher than the others. 
+
+Valence:
+Valence, which measures the musical positiveness and how happy it sounds, shows that korean hip-hop has the highest median valence, suggesting a trend towards more upbeat, positive music in this category.
+German Hip-hop has the lowest median valence, possibly indicating a preference for melanchonic or sad vibes.
+
+Anova test:
+An ANOVA test was preformed on these features across the 4 groups, the result shows that 4 playlists have siginifant difference in energy,valence, speechiness and acousticness, which answers to our question that across these 4 cultures and languages, the playlist in different languages from which a track comes does have difference in its energy, valence, speechiness and acousticness, and no statistically significant difference in liveness, instrumentalness, danceability.
+
+
+This information is useful for building the classification models and feature selections later on.
+
+
+
+### Correlation:Audio features, popularity and timbre
+
+```{r echo=FALSE, results='hide', message=FALSE, warning=FALSE}
+numeric_columns <- c("danceability", "energy", "valence", "speechiness", "instrumentalness", "tempo","liveness","loudness","acousticness","track.popularity","c01","c02","c03","c04","c05","c06","c07","c08","c09","c10","c11","c12")
+
+
+correlation_matrix <- cor(hiphop_features[, numeric_columns], use = "complete.obs")
 
 
 library(ggplot2)
@@ -201,31 +252,46 @@ ggplot(correlation_matrix_melted, aes(Var1, Var2, fill = value)) +
   scale_fill_gradient2(low = "blue", high = "red", mid = "white", midpoint = 0) +
   theme_minimal() +
   theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1)) +
-  labs(x = "", y = "", title = "Correlation Matrix of Audio Features", fill = "Correlation")
+  labs(x = "", y = "", title = "Correlation Matrix: Audio features, popularity, timbre", fill = "Correlation")
 ```
 
 
 ***
-Loudness and energy have the strongest correlation, and
 
-### chroma
+
+This is a comprehensive correlation matrix of spotify audio features, popularity and Spotify timbre coefficient,this graph has a lot of different information but it is aiming to see if there is any interesting and unexpected correlations between them.
+
+A red square indicates a positive correlation, a purple square indicates a negative correlation. The more strong the color is, the more correlated they are.
+
+We can see that danceability has a moderate positive correlation with popularity, it suggests that more danceable tracks tend to be more popular, regardless of linguistic and cultural context. Timbre coefficient like c05, c08, c11, c12, all have a moderate positive correlation with popularity.
+
+There are a few correlations here that are interesting to point out: 
+
+Loudness and energy and C01: these three have strong positive correlation, could mean that they are more or less measuring the same thing
+
+Acousticsness/ instrumentalness and C02: C02 has strong negative correlations with acousticness and insrtumentalness, this could mean that C02 is more related to synthetic or electronically produced sounds or vocals.
+
+C06 has a strong negative correlation with c11, which could mean that these coefficients measure some aspects of timbre that are inversely related.
+
+
+
+### Key profile of each playlist
 
 ```{r}
-
 get_pitch_data <- function(features) {
   pitch_data <- features %>%
-    select( key, mode) %>%
+    dplyr::select(key, mode) %>%  
     mutate(
       major = as.numeric(mode == 1),
       minor = as.numeric(mode == 0)
     ) %>%
-    group_by(key) %>%
-    summarise(
+    dplyr::group_by(key) %>%
+    dplyr::summarise(
       Count = n(),
       MajorCount = sum(major),
       MinorCount = sum(minor),
     ) %>%
-    arrange(key)
+    dplyr::arrange(key)
   return(pitch_data)
 }
 
@@ -241,7 +307,7 @@ key_labels <- c('C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B')
 pitch_df <- bind_rows(
   lapply(names(pitch_analysis), function(playlist_name) {
     df <- pitch_analysis[[playlist_name]]
-    df$Playlist <- playlist_name  # this ensures that playlist names are correctly assigned
+    df$Playlist <- playlist_name  
     df
   }),
   .id = 'Playlist_id'
@@ -250,35 +316,268 @@ pitch_df <- bind_rows(
 
 ggplot(pitch_df, aes(x = as.factor(key), y = Count, fill = Playlist)) +
   geom_bar(stat = 'identity', position = 'dodge') +
-  scale_x_discrete(labels = key_labels) +  # Apply the pitch class names
-  scale_fill_brewer(palette = 'Set3', labels = c('DE', 'FR', 'ES', 'KR')) +  # Ensure correct playlist labels
+  scale_x_discrete(labels = key_labels) +  
+  scale_fill_brewer(palette = 'Set3', labels = c('DE', 'FR', 'ES', 'KR')) +  
   labs(x = 'Musical Key', y = 'Count', fill = 'Playlist', title = 'Pitch Class Profile Comparison Across Playlists') +
   theme_minimal()
 
 ```
 
-***
 
-something to say here
 
-### What is the most representative track of each playlist?
+------------------------------------------------------------------------
+
+This bar chart shows a pitch class profile comparison across hip-hop playlists from Germany (DE), France (FR), Spain (ES), and Korea (KR). A pitch class profile illustrates the distribution of musical keys across a collection of songs.
+
+From this chart, we can observe the following about each playlist:
+
+German Hip-Hop (DE):
+The key of B is the most common, followed by A# and C#, with D# being the least common.
+French Hip-Hop (FR):
+The key of C# and B is the most common, like german rap, D# is the least common in french rap.
+Spanish Hip-Hop (ES):
+The key of C# is the most common, A seem to be least common.
+Korean Hip-Hop (KR):
+A very high count for the key of C# stands out, suggesting a strong preference for this key.
+D#, A and A# are less common.
+
+
+The data suggests there might be unique cultural signatures in the harmonic of hiphop music, which could potentially influence popularity.The pitch class profile can reflect cultural preferences for certain keys. For example, the prominence of C# across all four playlists show that there is a preference maybe in the hiphop culture for this specific key. This could be a factor to consider in predicting popularity.
+
+
+A chi-square test showed that there is no siginificant difference in the preferred pitch classes aross the four playlists.
+
+### Spotify Timbre coeficient across playlists
+
+
 
 ```{r}
-average_features_by_playlist <- all_features %>%
-  group_by(language) %>%
+library(viridis) 
+
+timbre <- hiphop_features %>%
+  pivot_longer(cols = starts_with("c"), names_to = "Coefficient", values_to = "Value") %>%
+  mutate(Coefficient = factor(Coefficient, levels = paste0("c", sprintf("%02d", 1:12)))) 
+
+ggplot(timbre, aes(x = Coefficient, y = Value, fill = playlist_name)) +
+  geom_violin(scale = "width", adjust = 1) +
+  geom_boxplot(width = 0.1, fill = "white", outlier.shape = NA) + 
+  scale_fill_viridis_d() + 
+  labs(x = "Spotify Timbre Coefficients", y = "", fill = "Playlist") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1), 
+        legend.position = "right") 
+
+
+
+```
+
+***
+ANOVA test
+The following coefficients were significant:
+C01,C03,C04,C05,C06,C07,C08,C09,C12
+This means that the variance in these coefficient is significantly different across the 4 playlists.
+This also indicates that, although they have the same genre as hiphop, the timbre used in the four playlists in different languages varies significantly.
+
+From the violin plot we can see that,for example, although all four playlists have virtually similar distributions for all coefficients. korean hiphop is slighly higher than others in C01 and C01, while german hiphop is the lowest in C02. The coefficients that have significant difference could be useful predictors in distinguishing between the different playlists.
+
+### What features make a hiphop song popular? - Stepwise regression model
+
+
+```{r echo=FALSE, results='hide', message=FALSE, warning=FALSE}
+library(MASS)
+hiphop_features<-read_rds('data/hiphop_features.rds')
+full_model <- lm(track.popularity ~ danceability + valence + energy + loudness + speechiness + acousticness + instrumentalness + liveness + tempo+ c01 +c02 +c03 + c04+c05+c06+c07+c08+c09+c10+c11+c12+mode, data=hiphop_features)
+stepwise_model <- stepAIC(full_model, direction="both")
+model_summary <- broom::tidy(stepwise_model)
+
+# Adding a significance level column based on p-value
+model_summary <- model_summary %>%
+  mutate(significance = case_when(
+    p.value < .001 ~ '***',
+    p.value < .01 ~ '**',
+    p.value < .05 ~ '*',
+    p.value < .1 ~ '.',
+    TRUE ~ ' '
+  ))
+
+# Plotting
+ggplot(model_summary, aes(x = reorder(term, estimate), y = estimate)) +
+  geom_col(aes(fill = significance)) +
+  geom_errorbar(aes(ymin = estimate - std.error, ymax = estimate + std.error), width = 0.2) +
+  coord_flip() +
+  labs(x = "Spotify Audio feature", y = "Estimate", title = "Audio feature and popularity coefficient estimates and significance") +
+  theme_minimal()
+```
+
+***
+
+Because there is a set of potential independent variables in the feature list and timbre coeficients, stepwise regression model can reduce the number of variables to only those that provide the most statistical significance to the model. This stepwise regression model was performed on combining all the playlists together, this helps us choose from all the different feature to find the features that are relevant. 
+
+Here are the coefficients that were included in the model:
+danceability: the tracks with higher danceability are associated with higher popularity. It's statistically significant with a p-value< 0.01. 
+acousticness: more acoustic tracks are, the less popular they are, with p < 0.05. 
+
+instrumentalness: has a negative association with popularity, However,with a p-value > 0.05, the impact and variance explained by this feature could be weaker. 
+
+mode: Shows a significant negative coefficient, meaning tracks in a minor key (mode = 0) are on average less popular than those in a major key (mode = 1), with p < 0.05.
+
+Spotify mfcc coefficients show that c02, c04, c05, c08, c09, c11 all have significant associations with popularity, with c11, c08, c05 being positive and c02, c04, c09 being negative. 
+
+R-squared: 0.2293 suggests that approximately 22.93% of the variability in track.popularity is explained in the model.This means other factors are act play, could be other features that are not captured and this could also be some business and marketing aspects. Most importantly, this is a collection of hip-hop songs from 4 different languages, there could be different factors that contribute to a specific language's track popularity.
+
+The overall F-test is significant (p<0.01), suggesting that this provides a good fit to the data. 
+### What features make songs in each language popular? {.chart .fill}
+
+```{r echo=FALSE, results='hide', message=FALSE, warning=FALSE}
+de_all<-read_rds('data/de_all.rds')
+fr_all<-read_rds('data/fr_all.rds')
+kr_all<-read_rds('data/kr_all.rds')
+es_all<-read_rds('data/es_all.rds')
+```
+
+```{r echo=FALSE, results='hide', message=FALSE, warning=FALSE}
+fr_model <- lm(track.popularity ~ danceability + valence + energy + loudness + speechiness + acousticness + instrumentalness + liveness + tempo+ c01 +c02 +c03 + c04+c05+c06+c07+c08+c09+c10+c11+c12+mode, data=fr_all)
+fr_stepwise_model <- stepAIC(fr_model, direction="both")
+fr_summary <- broom::tidy(fr_stepwise_model)
+
+# Adding a significance level column based on p-value
+fr_summary <- fr_summary %>%
+  mutate(significance = case_when(
+    p.value < .001 ~ '***',
+    p.value < .01 ~ '**',
+    p.value < .05 ~ '*',
+    p.value < .1 ~ '.',
+    TRUE ~ ' '
+  ))
+
+# Plotting
+fr_plot<-ggplot(fr_summary, aes(x = reorder(term, estimate), y = estimate)) +
+  geom_col(aes(fill = significance)) +
+  geom_errorbar(aes(ymin = estimate - std.error, ymax = estimate + std.error), width = 0.2) +
+  coord_flip() +
+  labs(x = "Spotify Audio feature", y = "Estimate", title = "French hiphop") +
+  theme_minimal()
+```
+
+```{r echo=FALSE, results='hide', message=FALSE, warning=FALSE}
+es_model <- lm(track.popularity ~ danceability + valence + energy + loudness + speechiness + acousticness + instrumentalness + liveness + tempo+ c01 +c02 +c03 + c04+c05+c06+c07+c08+c09+c10+c11+c12+mode, data=es_all)
+es_stepwise_model <- stepAIC(es_model, direction="both")
+es_summary <- broom::tidy(es_stepwise_model)
+
+# Adding a significance level column based on p-value
+es_summary <- es_summary %>%
+  mutate(significance = case_when(
+    p.value < .001 ~ '***',
+    p.value < .01 ~ '**',
+    p.value < .05 ~ '*',
+    p.value < .1 ~ '.',
+    TRUE ~ ' '
+  ))
+
+es_plot<-ggplot(es_summary, aes(x = reorder(term, estimate), y = estimate)) +
+  geom_col(aes(fill = significance)) +
+  geom_errorbar(aes(ymin = estimate - std.error, ymax = estimate + std.error), width = 0.2) +
+  coord_flip() +
+  labs(x = "Spotify Audio feature", y = "Estimate", title = "Spanish hiphop") +
+  theme_minimal()
+```
+
+```{r echo=FALSE, results='hide', message=FALSE, warning=FALSE}
+de_model <- lm(track.popularity ~ danceability + valence + energy + loudness + speechiness + acousticness + instrumentalness + liveness + tempo+ c01 +c02 +c03 + c04+c05+c06+c07+c08+c09+c10+c11+c12+mode, data=de_all)
+de_stepwise_model <- stepAIC(de_model, direction="both")
+de_summary <- broom::tidy(de_stepwise_model)
+
+# Adding a significance level column based on p-value
+de_summary <- de_summary %>%
+  mutate(significance = case_when(
+    p.value < .001 ~ '***',
+    p.value < .01 ~ '**',
+    p.value < .05 ~ '*',
+    p.value < .1 ~ '.',
+    TRUE ~ ' '
+  ))
+
+# Plotting
+de_plot<-ggplot(de_summary, aes(x = reorder(term, estimate), y = estimate)) +
+  geom_col(aes(fill = significance)) +
+  geom_errorbar(aes(ymin = estimate - std.error, ymax = estimate + std.error), width = 0.2) +
+  coord_flip() +
+  labs(x = "Spotify Audio feature", y = "Estimate", title = "German hiphop") +
+  theme_minimal()
+```
+
+```{r echo=FALSE, results='hide', message=FALSE, warning=FALSE}
+kr_model <- lm(track.popularity ~ danceability + valence + energy + loudness + speechiness + acousticness + instrumentalness + liveness + tempo+ c01 +c02 +c03 + c04+c05+c06+c07+c08+c09+c10+c11+c12+mode, data=kr_all)
+kr_stepwise_model <- stepAIC(kr_model, direction="both")
+kr_summary <- broom::tidy(kr_stepwise_model)
+# Adding a significance level column based on p-value
+kr_summary <- kr_summary %>%
+  mutate(significance = case_when(
+    p.value < .001 ~ '***',
+    p.value < .01 ~ '**',
+    p.value < .05 ~ '*',
+    p.value < .1 ~ '.',
+    TRUE ~ ' '
+  ))
+
+kr_plot<-ggplot(kr_summary, aes(x = reorder(term, estimate), y = estimate)) +
+  geom_col(aes(fill = significance)) +
+  geom_errorbar(aes(ymin = estimate - std.error, ymax = estimate + std.error), width = 0.2) +
+  coord_flip() +
+  labs(x = "Spotify Audio feature", y = "Estimate", title = "Korean hiphop features and popularity") +
+  theme_minimal()
+```
+
+```{r echo=FALSE, results='hide', message=FALSE, warning=FALSE}
+combined_plot <- es_plot + fr_plot + de_plot + kr_plot+plot_layout(ncol = 2)
+
+show(combined_plot)
+```
+
+***
+p-value < 0.05 (*): statistical significance.
+p-value < 0.01 (**): high statistical significance.
+p-value < 0.001 (***): very high statistical significance.
+
+Spanish Hip-Hop:
+The features valence, speechiness, c05, c09 have predictive power over track popularity. Other features appeared in this graph also have acoosiation but not significant with popularity. In spanish Hip-hop playlist, valence has a positive assoication with popularity and speechiness has a negative association with popularity. 
+
+French Hip-Hop:
+Features like instrumentalness have a negative association with popularity, but it's not siginificant, and the whole model is not significant. 
+
+German Hip-Hop:
+In this model, danceability,c01,c02,c03,c06 are significant predictors of popularity. Danceability, C01, C03 has a positive assocation with popularity, while spotify mfcc coeficcient c02, c06 have a negative association with popularity.
+Energy has a negative coefficient, which is interesting as it typically would be associated positively with popularity in hip-hop music.
+
+Korean Hip-Hop:
+Only c01, c02 and acoustiness were included in the model, and they are not siginificant. 
+
+Across all four cultural contexts, there all have unique features predicting song popularity, whilst some are not statistically significant, we can see that in the selected playlist,valence may have a positive association with popularity in spanish and german hip-hop songs, and instrumentalness may have a negative association with popularity in french and spanish hiphop. Some spotify mfcc coefficients are sigificantly associated with track populartity as well. 
+
+In summary, these models support the assumption that some audio features may universally influence popularity across cultures, while the impact of others can vary. The variability in significant predictors across cultures underscores the importance of considering cultural context in predictive modeling of music popularity.
+
+
+### What is the most representative(most average) track of each playlist?
+
+
+
+```{r}
+average_features_by_playlist <- hiphop_features %>%
+  group_by(playlist_name) %>%
   summarise(across(c(danceability, energy, valence, speechiness, acousticness, instrumentalness, liveness, tempo), mean, na.rm = TRUE))
+
+
+
 
 ```
 
 ```{r}
-library(dplyr)
 
 # Calculate average features by language
-average_features_by_language <- all_features %>%
-  group_by(language) %>%
+average_features_by_language <- hiphop_features %>%
+  group_by(playlist_name) %>%
   summarise(across(c(danceability, energy, valence, speechiness, acousticness, instrumentalness, liveness, tempo), mean, na.rm = TRUE))
 
-# Define distance calculation function
+
 calc_distance <- function(track_features, avg_features) {
   sqrt(sum((track_features - avg_features)^2))
 }
@@ -287,13 +586,13 @@ calc_distance <- function(track_features, avg_features) {
 representative_tracks <- list()
 
 # Loop through each language to find the most representative track
-for (lang in unique(all_features$language)) {
-  tracks <- filter(all_features, language == lang)
-  avg_features <- filter(average_features_by_language, language == lang)
-  avg_features_numeric <- select(avg_features, -language)
+for (lang in unique(hiphop_features$playlist_name)) {
+  tracks <- filter(hiphop_features, playlist_name == lang)
+  avg_features <- filter(average_features_by_language, playlist_name == lang)
+  avg_features_numeric <- dplyr::select(avg_features, -playlist_name)
   
   # Calculate distances from the average features for each track
-  distances <- apply(select(tracks, c(danceability, energy, valence, speechiness, acousticness, instrumentalness, liveness, tempo)), 1, function(track_row) {
+  distances <- apply(dplyr::select(tracks, c(danceability, energy, valence, speechiness, acousticness, instrumentalness, liveness, tempo)), 1, function(track_row) {
     calc_distance(track_row, unlist(avg_features_numeric))
   })
   
@@ -308,79 +607,70 @@ for (lang in unique(all_features$language)) {
 # Print the most representative track for each language
 for (lang in names(representative_tracks)) {
   representative_track <- representative_tracks[[lang]]
-  track_name <- representative_track$`track.name`  # Adjust the column name based on your dataframe
+  track_name <- representative_track$`track.name` 
   cat("The most representative track in", lang, "is:", track_name, "\n")
 }
 
 ```
 
 ```{r}
-library(plotly)
 
-# Assuming 'all_features' already has the 'language' column and necessary audio features
-pca_result <- prcomp(all_features[, c("danceability", "energy", "valence", "speechiness", "acousticness", "instrumentalness", "liveness", "tempo")], center = TRUE, scale. = TRUE)
+pca_result <- prcomp(hiphop_features[, c("danceability", "energy", "valence", "speechiness", "acousticness", "instrumentalness", "liveness", "tempo")], center = TRUE, scale. = TRUE)
 pca_data <- as.data.frame(pca_result$x[, 1:2])
 colnames(pca_data) <- c("PC1", "PC2")
+pca_data$playlist_name <- hiphop_features$playlist_name
+pca_data$track_name <- hiphop_features$track.name
 
-# Add back the language and track names to the PCA data
-pca_data$playlist_name <- all_features$playlist_name
-pca_data$track_name <- all_features$track.name
+representative_tracks_info <- data.frame(
+  playlist_name = c("French Hiphop", "German Hiphop2", "Latino Hiphop", "Korean Hiphop2"),
+  track_name = c("Christian Dior", "THOT", "Cómo Diamante", "Ghost"),
+  rep_marker = TRUE
+)
+
+pca_data <- left_join(pca_data, representative_tracks_info, by = c("playlist_name", "track_name"))
+
+pca_data$rep_marker[is.na(pca_data$rep_marker)] <- FALSE
+
+
+custom_shapes <- c(`FALSE` = 16, `TRUE` = 17)  
+custom_sizes <- c(`FALSE` = 4, `TRUE` = 8)  
+
+
+p <- ggplot(pca_data, aes(x = PC1, y = PC2)) +
+  geom_point(aes(color = playlist_name, shape = as.factor(rep_marker), size = as.factor(rep_marker), 
+                 text = paste("Track:", track_name, "<br>Language:", playlist_name)), alpha = 0.7) +
+  scale_shape_manual(values = custom_shapes) +
+  scale_size_manual(values = custom_sizes) +
+  theme_minimal() +
+  labs(title = "All tracks", x = "Principal Component 1", y = "Principal Component 2", color = "playlist_name",) +
+  guides(size = "none")  
+
+
+p_pca<- ggplotly(p, tooltip = "text")
+
+# Display the plot
+p_pca
+
 
 ```
 
+------------------------------------------------------------------------
 
-```{r}
-# Create a basic plotly object with PCA data
-library(plotly)
-library(dplyr)
+<iframe style="border-radius:12px" src="https://open.spotify.com/embed/playlist/7oIDr5FLnnjjwVyPQzd9fr?utm_source=generator&amp;theme=0" width="100%" height="352" frameBorder="0" allowfullscreen allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy">
 
-# Assuming pca_data contains all tracks with PCA coordinates
-# and representative_tracks contains the most representative tracks WITH their PCA coordinates
+</iframe>
 
-# Plot all tracks
-p <- plot_ly(data = pca_data, x = ~PC1, y = ~PC2, type = 'scatter', mode = 'markers',
-             text = ~paste("Track:", track_name, "<br>Playlist:", playlist_name),
-             hoverinfo = "text", 
-             marker = list(color = ~as.factor(playlist_name), size = 10, opacity = 0.6)) %>%
-  layout(title = "PCA of Playlists",
-         xaxis = list(title = 'Principal Component 1'),
-         yaxis = list(title = 'Principal Component 2'),
-         colorway = c("red", "blue", "green", "yellow"),
-         hovermode = "closest")
+This feature is based on comparing the audio features of each track against the average audio features of all tracks within the same language playlist. It computes the average score of each feature of each playlist and the track whose features are closest to these averages is considered the most representative.
 
-# Ensure representative_tracks has PC1, PC2 for plotting
-# This step might require adding PCA coordinates to representative_tracks, similar to pca_data
+Here is logic behind this feature that retrieves the most representative songs in the playlist:
 
-# Highlight the most representative tracks
-for(lang in unique(representative_tracks$playlist_name)) {
-  rep_track <- representative_tracks %>% filter(playlist_name == lang)
-  p <- p %>% add_markers(data = rep_track, x = ~PC1, y = ~PC2,
-                         marker = list(size = 15, symbol = 'star-diamond', line = list(color = 'black', width = 2)),
-                         text = ~paste("Representative Track:", track_name, "<br>Playlist:", playlist_name),
-                         hoverinfo = "text",
-                         name = lang)  # This helps in differentiating groups
-}
+For each playlist, I calculated the average value for each audio feature across all tracks in that playlist. This gives a profile of what the average track looks like for each playlist of different languages.
 
-# Render the plot
-p
+For each track in a group, calculate the Euclidean distance between its audio features and the group's average audio features.The track with the smallest Euclidean distance to the average profile is considered the most representative of that group. It's the track whose features are, on average, closest to the mean features of the group.
 
-```
+Once the most representative track is identified, its track_name was extracted.
 
-***
-
-<iframe style="border-radius:12px" src="https://open.spotify.com/embed/playlist/7oIDr5FLnnjjwVyPQzd9fr?utm_source=generator&theme=0" width="100%" height="352" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
-
-based on comparing the audio features of each track against the average audio features of all tracks within the same group. The track whose features are closest to these averages is considered the most representative. This process assumes that the "average sound" of a playlist can be quantified by the mean values of its tracks' audio features, such as danceability, energy, valence, etc.
-
-The Steps Explained: Group and Average: For each group (identified by language in your dataset), calculate the average value for each audio feature across all tracks in that group. This gives a profile of what the average track looks like for each language in terms of its Spotify audio features.
-
-Calculate Distance: For each track in a group, calculate the Euclidean distance between its audio features and the group's average audio features. The Euclidean distance is a measure of the overall difference between two sets of numbers, in this case, audio feature vectors. Mathematically, if you have two vectors x and y, the Euclidean distance d between them is calculated as d = sqrt(sum((x - y)\^2)), where you subtract corresponding elements of y from x, square the results, sum these squared differences, and take the square root of the sum.
-
-Identify the Closest Track: The track with the smallest Euclidean distance to the average profile is considered the most representative of that group. It's the track whose features are, on average, closest to the mean features of the group, making it a sort of "central" track that best embodies the average characteristics of the group.
-
-Extract Track ID: Once the most representative track is identified, its track_id (or any other relevant identifier) can be extracted for further use, like retrieving the track on Spotify or analyzing it further.
-
-
+Then the data was performed a PCA analysis for visualization and clustering, I highlighted the most representative tracks in each playlist, and the clours were grouped by playlists.The most representative tracks are useful for further analysis when we wanna take a close look at a single track and do anlaysis on it's chroma and timbre features.
 
 ### Self-similarity matrices of most-representative tracks in each language
 
@@ -390,7 +680,7 @@ Extract Track ID: Once the most representative track is identified, its track_id
 cd <-
   read_rds('data/cd.rds') |>
   compmus_align(bars, segments) |>
-  select(bars) |>
+  dplyr::select(bars) |>
   unnest(bars) |>
   mutate(
     pitches =
@@ -438,7 +728,7 @@ German
 thot <-
   read_rds('data/thot.rds') |>
   compmus_align(bars, segments) |>
-  select(bars) |>
+  dplyr::select(bars) |>
   unnest(bars) |>
   mutate(
     pitches =
@@ -486,7 +776,7 @@ Spanish
 como <-
   read_rds('data/como.rds') |>
   compmus_align(bars, segments) |>
-  select(bars) |>
+  dplyr::select(bars) |>
   unnest(bars) |>
   mutate(
     pitches =
@@ -525,7 +815,7 @@ bind_rows(
   facet_wrap(~type) +
   scale_fill_viridis_c(option = "E", guide = "none") +
   theme_classic() + 
-  labs(x = "", y = "", title="De-Thot")
+  labs(x = "", y = "", title="Es- Como Diamante")
 ```
 
 Korean
@@ -534,7 +824,7 @@ Korean
 tl <-
   read_rds('data/tl.rds') |>
   compmus_align(bars, segments) |>
-  select(bars) |>
+  dplyr::select(bars) |>
   unnest(bars) |>
   mutate(
     pitches =
@@ -577,10 +867,7 @@ bind_rows(
 ```
 
 ------------------------------------------------------------------------
-
-some analysis
-
-### Ceptrogram
+Although the "most representative tracks" in each playlist are decided by its audio features and how close they are to the average audio features of the playlist. It would be interesting to look at the self-similarity matrices of these tracks. Self-similarity matrices offer a more nuanced look we can look at recurring patterns, motifs, or structural similarities. From the bigger scope of the structure we can see that all songs have relatively simple structures, all tracks follow a structure similar to ABA.
 
 ### Random forest
 
@@ -603,11 +890,6 @@ hiphop <- bind_rows(fr_analyzed, de_analyzed, kr_analyzed, es_analyzed)
 
 ```
 
-
-
-```{r}
-hiphop_features <-read_rds('data/hiphop_features.rds')
-```
 
 ```{r}
 hiphop_recipe_all <-
@@ -652,25 +934,6 @@ hiphop_forest <-
 ```
 
 ```{r}
-get_pr <- function(fit) {
-  fit |> 
-    conf_mat_resampled() |> 
-    group_by(Prediction) |> mutate(precision = Freq / sum(Freq)) |> 
-    group_by(Truth) |> mutate(recall = Freq / sum(Freq)) |> 
-    ungroup() |> filter(Prediction == Truth) |> 
-    select(class = Prediction, precision, recall)
-}  
-
-get_conf_mat <- function(fit) {
-  outcome <- .get_tune_outcome_names(fit)
-  fit |> 
-    collect_predictions() |> 
-    conf_mat(truth = outcome, estimate = .pred_class)
-}  
-```
-
-
-```{r}
 workflow() |> 
   add_recipe(hiphop_recipe_all) |> 
   add_model(forest_model) |> 
@@ -688,10 +951,22 @@ workflow() |>
 
 ### KNN classification
 
-```{r}
+```{r echo=FALSE, results='hide', message=FALSE, warning=FALSE}
 hiphop_recipe <-
   recipe(
     playlist ~ c01+c06+c12+tempo+acousticness+loudness+danceability+instrumentalness,
+    data = hiphop_features
+  ) |> 
+  step_center(all_predictors()) |>
+  step_scale(all_predictors())
+
+```
+
+
+```{r echo=FALSE, results='hide', message=FALSE, warning=FALSE}
+hiphop_recipe2 <-
+  recipe(
+    playlist ~ c01+c06+c12+tempo+acousticness+loudness+danceability+instrumentalness+time_signature,
     data = hiphop_features
   ) |> 
   step_center(all_predictors()) |>
@@ -706,6 +981,25 @@ knn_model <-
   set_engine("kknn")
 hiphop_knn <-
   workflow() |> 
+  add_recipe(hiphop_recipe2) |> 
+  add_model(knn_model) |> 
+  fit_resamples(hiphop_cv, control = control_resamples(save_pred = TRUE))
+hiphop_knn |>
+  collect_predictions() |> 
+  conf_mat(truth = playlist, estimate = .pred_class) |> 
+  autoplot(type = "heatmap")
+
+  
+```
+
+```{r echo=FALSE, results='hide', message=FALSE, warning=FALSE}
+
+knn_model <-
+  nearest_neighbor(neighbors = 1) |>
+  set_mode("classification") |> 
+  set_engine("kknn")
+hiphop_knn <-
+  workflow() |> 
   add_recipe(hiphop_recipe) |> 
   add_model(knn_model) |> 
   fit_resamples(hiphop_cv, control = control_resamples(save_pred = TRUE))
@@ -713,9 +1007,43 @@ hiphop_knn |>
   collect_predictions() |> 
   conf_mat(truth = playlist, estimate = .pred_class) |> 
   autoplot(type = "heatmap")
+  
+  
 ```
-   
-### All precision and recall
+
+***
+The model correctly predicted 31 French hip-hop tracks.
+However, it incorrectly predicted 11 tracks as German, 1 as Korean, and 6 as Spanish.
+There are 27 correct predictions for German hip-hop.
+The model correctly predicted Korean hip-hop 31 correctly.
+There are 22 correct predictions for Latino hip-hop.
+
+The model has the best classification results observed for Korean hip-hop and French hip-hop,
+There seems to be some relatively obvious confusion between French and German hip-hop tracks, which might suggest similar audio features between these two categories or a shared musical influence, and geographically proximate that the model finds difficult to distinguish.The confusion between certain cultures suggests that the distinctions made by the model are based on the similarity of audio features, which may not capture all the nuances of cultural differences. This provides insight to the research question, that some audio features in hip-hop may not be as distinct across cultures, and therefore shared globally. And it might be due to cultural and geographical closeness, because Korean Hip-hop is easier distinguished in both models than the other languages, and possible explanation for the confusion which classifiws Latino hip-hop
+The results suggest the importance of investigating which audio features most significantly contribute to the model's predictive power, which may reveal insights related to the research question about how audio features influence track popularity in different cultures.
+
+Korean hip-hop is consistently identified well by both models, indicated by high precision and recall across the board.
+French hip-hop has improvement in performance when using KNN as opposed to Random Forest.
+German hip-hop was predicted better in random forest thant KNN , while for Spanish Hip-hop, either model clearly outperforming the other across both metrics for these classes.
+
+```{r}
+get_pr <- function(fit) {
+  fit |> 
+    conf_mat_resampled() |> 
+    group_by(Prediction) |> mutate(precision = Freq / sum(Freq)) |> 
+    group_by(Truth) |> mutate(recall = Freq / sum(Freq)) |> 
+    ungroup() |> filter(Prediction == Truth) |> 
+    dplyr::select(class = Prediction, precision, recall)
+}  
+
+get_conf_mat <- function(fit) {
+  outcome <- .get_tune_outcome_names(fit)
+  fit |> 
+    collect_predictions() |> 
+    conf_mat(truth = outcome, estimate = .pred_class)
+}  
+```
+
 Precision and Recall for Random Forest
 
 ```{r}
@@ -728,13 +1056,10 @@ Precision and Recall for KNN
 hiphop_knn|> get_pr()
 ```
 
-***
-Comparison
-
 
 ### K-means clustering for songs in all 4 playlsits: cluster numbers
 
-```{r}
+```{r echo=FALSE, results='hide', message=FALSE, warning=FALSE}
 hiphop_juice <-
   recipe(
     track.name ~
@@ -742,7 +1067,7 @@ hiphop_juice <-
       loudness +
       speechiness +
       acousticness +
-      instrumentalness + c01+c06+c12+tempo,
+      instrumentalness + c01+ c06+ c10+ tempo+energy+time_signature,
     data = hiphop_features
   ) |>
   step_center(all_predictors()) |>
@@ -753,8 +1078,7 @@ hiphop_juice <-
   column_to_rownames("track.name")
 ```
 
-
-```{r}
+```{r echo=FALSE, results='hide', message=FALSE, warning=FALSE}
 library(cluster)     # for silhouette width
 library(NbClust)
 
@@ -768,8 +1092,12 @@ print(nb)
 
 ```
 
+***
+Due to the large number of data in this dataset, a hierarchical clustering would be very difficult to analyse and visualize. Thus, I used K-means here for its simplicity and efficiency, and easier to visualize the clusters on a PCA plot. 
+To pick the best cluster numbers for the k-means clustering model is to see the elbow point in the second graph, which in this case is 10, so we will have 10 clusters in the next page. 
 
-### K-means clustering for songs in all 4 playlsits
+
+### K-means clustering for songs in all 4 playlsits: PCA plot
 
 ```{r}
 pca_result <- prcomp(hiphop_juice, scale. = TRUE)
@@ -804,13 +1132,34 @@ p
 ```
 
 
+
 ### A multi-lingual rap salad: Generating new playlists based on K-means clustering
 
-<iframe style="border-radius:12px" src="https://open.spotify.com/embed/playlist/6rExGOsB7IsxtPdIHTjINn?utm_source=generator" width="100%" height="352" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
+<iframe style="border-radius:12px" src="https://open.spotify.com/embed/playlist/3yUz3EMWQDhlyLPufKMuZL?utm_source=generator" width="100%" height="352" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
 
+What should I do if I want to listen to some hiphops with reggaeton(dembow) beats but not only in spanish? This clustering model might be the way to it. 
+
+This is an example of one of the 10 clusters generated by K-means clustering, all the languages are mixed together in this playlist with songs of similar attributes. 
 
 ### Conrtibutions and Limitations
 
-Popularity as a Measure of Cultural Relevance: Assuming that the most popular tracks on Spotify accurately reflect cultural trends or preferences may overlook underground or emerging scenes not yet represented in mainstream charts.
 
-Limitations of Spotify's Metrics: Spotify's definition of 'popularity' and its audio features are proprietary and algorithmically determined. While useful, they provide a specific lens on music that may not capture all dimensions of its cultural or artistic significance.
+Contributions:
+The analysis shows that in the trending hip-hop playlists of the four languages and cultures, there is a difference and similarity in the track audio features, which could indicate that certain musical qualities such as danceability, instrumentalness and liveness are generally appreciated in spotify's popular hip-hop music, while others are more culturally specific. Different playlists show similarities and differences in certain spotify timbre coefficients too.
+
+By looking at the correlation matrix of audio features and timbre coefficients, we can get a peak into what each coefficient could be related to what feature, given a opaque nature of these coefficients. So that this could be better used for modelling and clustering. 
+
+The regression model on the relationship between popularity and features showed us that certain features are universally associated with hip-hop track popularity in these playlists, such as danceability. But for each playlist and language, there are different factors contributing to track popularity, and for some playlists there is no significant feactures found, which could mean that there are many other factors that are not considered here. 
+
+The two classifications algorithms employed in this portfolio, random forest and knn, gave us a comparative analysis and insights for selecting appropriate predictors, and algorithms. Both algorithms have moderately good fittings for our data with evaluations shown in precision and recall, both have their strengths and weaknesses in identifying different playlists.Korean hip-hop is consistently identified well by both models, indicated by high precision and recall across the board.French hip-hop has improvement in performance when using KNN as opposed to Random Forest. German hip-hop was predicted better in random forest than KNN, while for Spanish Hip-hop, either model clearly outperforming the other across both metrics for these classes.This could also mean that, Korean hiphop playlist has songs that are more distinguishable from the rest, while german and french hiphop playlists share many similarities that confused the algorithms. 
+
+Lastly, this portfolio prompts a new way of appreciating these hiphop music, which is to mix all the languages together and cluster them based on features. The k-means clustering of these tracks generated 10 new playlists, which is a prototype for building a simple recommender system. 
+
+
+Limitations: 
+Spotify's definition of popularity is only based on its algorithms and the populartity within its own platform, thus can not be generalized to the culture and social context.
+When using average for finding the most representative tracks, averages can oversimplify the complexity of music. A track with average features might not necessarily embody the typical characteristics appreciated by listeners, and this also has the assumptions that the features are normally distributed, which is not true.
+
+The chosen songs for the corpus are from the spotify's official playlists of the current trending songs in this genre, there might be marketing, algorithms and other factors at play, and this tend to reflect a more mainstream taste in this genre. For answering the research question about what features contribute to popularity collectivly and respectively, the findings may be more indicative of what is currently promoted and more accessible to the average listener rather than the qualities that contribute to a song's popularity across the genre as a whole. The findings of this portfolio would be more applicable to understanding popularity within the mainstream, commercially successful music and "curated by Spotify currently" (important) .There are still many factors and relationships in this whole business and more factors should be examined and taken into account for track popularity in the future. For this study, we gain the very surfaced insight on the current trends in these music on Spotify, and this can not be generalized very well to the genres,the findings should be looked at only within these contexts and lenses. 
+
+
