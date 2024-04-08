@@ -16,10 +16,10 @@ output:
     vertical_layout: fill
 ---
 
+
 ```{r setup, include=FALSE}
 library(flexdashboard)
-# Install thematic and un-comment for themed static plots (i.e., ggplot2)
-# thematic::thematic_rmd()
+
 ```
 
 ```{r}
@@ -1161,5 +1161,4 @@ Spotify's definition of popularity is only based on its algorithms and the popul
 When using average for finding the most representative tracks, averages can oversimplify the complexity of music. A track with average features might not necessarily embody the typical characteristics appreciated by listeners, and this also has the assumptions that the features are normally distributed, which is not true.
 
 The chosen songs for the corpus are from the spotify's official playlists of the current trending songs in this genre, there might be marketing, algorithms and other factors at play, and this tend to reflect a more mainstream taste in this genre. For answering the research question about what features contribute to popularity collectivly and respectively, the findings may be more indicative of what is currently promoted and more accessible to the average listener rather than the qualities that contribute to a song's popularity across the genre as a whole. The findings of this portfolio would be more applicable to understanding popularity within the mainstream, commercially successful music and "curated by Spotify currently" (important) .There are still many factors and relationships in this whole business and more factors should be examined and taken into account for track popularity in the future. For this study, we gain the very surfaced insight on the current trends in these music on Spotify, and this can not be generalized very well to the genres,the findings should be looked at only within these contexts and lenses. 
-
 
