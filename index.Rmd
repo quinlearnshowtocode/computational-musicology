@@ -425,7 +425,9 @@ Spotify mfcc coefficients show that c02, c04, c05, c08, c09, c11 all have signif
 R-squared: 0.2293 suggests that approximately 22.93% of the variability in track.popularity is explained in the model.This means other factors are act play, could be other features that are not captured and this could also be some business and marketing aspects. Most importantly, this is a collection of hip-hop songs from 4 different languages, there could be different factors that contribute to a specific language's track popularity.
 
 The overall F-test is significant (p<0.01), suggesting that this provides a good fit to the data. 
-### What features make songs in each language popular? {.chart .fill}
+
+
+### What features make songs in each language popular?
 
 ```{r echo=FALSE, results='hide', message=FALSE, warning=FALSE}
 de_all<-read_rds('data/de_all.rds')
@@ -1024,7 +1026,7 @@ The results suggest the importance of investigating which audio features most si
 
 Korean hip-hop is consistently identified well by both models, indicated by high precision and recall across the board.
 French hip-hop has improvement in performance when using KNN as opposed to Random Forest.
-German hip-hop was predicted better in random forest thant KNN , while for Spanish Hip-hop, either model clearly outperforming the other across both metrics for these classes.
+German hip-hop was predicted better in random forest than KNN , while for Spanish Hip-hop, either model clearly outperforming the other across both metrics for these classes. A precision and recall of 0.62, using korean hiphop as an example, is quite acceptable in this case, considering we are trying to use audio features to predict different languages in the same main genre.This also reflects that there are some differences in these playlists that contribute to a relatively accurate model.
 
 ```{r}
 get_pr <- function(fit) {
@@ -1151,7 +1153,8 @@ By looking at the correlation matrix of audio features and timbre coefficients, 
 
 The regression model on the relationship between popularity and features showed us that certain features are universally associated with hip-hop track popularity in these playlists, such as danceability. But for each playlist and language, there are different factors contributing to track popularity, and for some playlists there is no significant feactures found, which could mean that there are many other factors that are not considered here. 
 
-The two classifications algorithms employed in this portfolio, random forest and knn, gave us a comparative analysis and insights for selecting appropriate predictors, and algorithms. Both algorithms have moderately good fittings for our data with evaluations shown in precision and recall, both have their strengths and weaknesses in identifying different playlists.Korean hip-hop is consistently identified well by both models, indicated by high precision and recall across the board.French hip-hop has improvement in performance when using KNN as opposed to Random Forest. German hip-hop was predicted better in random forest than KNN, while for Spanish Hip-hop, either model clearly outperforming the other across both metrics for these classes.This could also mean that, Korean hiphop playlist has songs that are more distinguishable from the rest, while german and french hiphop playlists share many similarities that confused the algorithms. 
+The two classifications algorithms employed in this portfolio, random forest and knn, gave us a comparative analysis and insights for selecting appropriate predictors, and algorithms. Both algorithms have moderately good fittings for our data with evaluations shown in precision and recall, both have their strengths and weaknesses in identifying different playlists. Korean hip-hop is consistently identified well by both models, indicated by high precision and recall across the board.French hip-hop has improvement in performance when using KNN as opposed to Random Forest. German hip-hop was predicted better in random forest than KNN, while for Spanish Hip-hop, either model clearly outperforming the other across both metrics for these classes.This could also mean that, Korean hiphop playlist has songs that are more distinguishable from the rest, while german and french hiphop playlists might share many similarities that confused the algorithms. The relatively successful classification models also tells us that there are some machine recognizable differences in these playlists, although they have same main genre but different languages.
+
 
 Lastly, this portfolio prompts a new way of appreciating these hiphop music, which is to mix all the languages together and cluster them based on features. The k-means clustering of these tracks generated 10 new playlists, which is a prototype for building a simple recommender system. 
 
